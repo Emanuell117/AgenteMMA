@@ -193,6 +193,60 @@ RESPUESTA FINAL: No encontré a **"Carlos Prates"** en la base de datos. Las sug
 
 ## 4. Guía de ejecución
 
+El prototipo es el notebook `agente_mma.ipynb`. Está pensado para Google Colab, pero también corre en Jupyter local.
+
+### Requisitos
+* Una clave de API de NVIDIA NIM. Se obtiene gratis creando una cuenta en [build.nvidia.com](https://build.nvidia.com).
+* El archivo `peleadores.csv` de este repositorio.
+* Python 3 con `openai` y `pandas`. La primera celda del notebook los instala.
+
+### Paso 1. Configurar la clave
+* **En Colab:** en el panel lateral, abrir *Secretos* (ícono de llave), crear un secreto llamado `NVIDIA_API_KEY` con la clave y activar el acceso del notebook.
+* **En local:** definir la variable de entorno antes de abrir Jupyter:
+  ```bash
+  export NVIDIA_API_KEY="tu_clave"
+  jupyter notebook agente_mma.ipynb
+  ```
+
+Si la clave no está configurada, el notebook se detiene con el mensaje *"Falta la clave..."*.
+
+### Paso 2. Cargar los datos
+* **En Colab:** al ejecutar la celda de la sección *2. Datos*, si `peleadores.csv` no está en la sesión, se abre un diálogo para subirlo.
+* **En local:** dejar `peleadores.csv` en la misma carpeta del notebook.
+
+La celda imprime cuántos peleadores se cargaron y las categorías disponibles.
+
+### Paso 3. Ejecutar el notebook
+Ejecutar las celdas en orden (en Colab, *Entorno de ejecución > Ejecutar todas*):
+
+| Sección del notebook | Qué hace |
+|---|---|
+| 1. Instalación y configuración | Instala las librerías, conecta con NVIDIA NIM y elige el modelo. |
+| 2. Datos | Carga `peleadores.csv`. |
+| 3. Herramientas | Define las funciones que consultan la tabla. |
+| 4. Descripción de las herramientas | Declara los esquemas JSON que ve el modelo. |
+| 5. Agente | Define el prompt del sistema y el ciclo del agente. |
+| 6. Prueba rápida | Hace una pregunta de ejemplo sobre Jose Aldo. |
+| 7. Casos de prueba | Ejecuta los 5 casos de la sección 3, los verifica contra el CSV y demuestra el límite de llamadas (`max_llamadas=1`). |
+| 8. Preguntar al modelo | Pide una pregunta por teclado y la responde. |
+
+Para hacer otras preguntas se puede ejecutar de nuevo la última celda o llamar directamente a la función:
+```python
+agente("¿Quiénes son los 3 peleadores de peso pesado con mayor alcance?")
+```
+
+### Elección del modelo
+NVIDIA cambia con el tiempo los modelos que ofrece, así que el notebook no fija uno. Recorre una lista de preferidos (`PREFERIDOS`), prueba cada uno con una llamada que usa herramientas y se queda con el primero que responde. Imprime el modelo en uso. En nuestras pruebas fue `mistralai/mistral-large-4-1t-a52b`.
+
+Para forzar un modelo, se escribe su identificador completo en la variable `MODEL` de la primera celda de código, por ejemplo `MODEL = "mistralai/mistral-large-4-1t-a52b"`.
+
+### Problemas frecuentes
+| Problema | Solución |
+|---|---|
+| *"Falta la clave..."* | Revisar que el secreto se llame exactamente `NVIDIA_API_KEY` y que el notebook tenga acceso a él. |
+| *"Ningún candidato funciona"* | Elegir en [build.nvidia.com/models](https://build.nvidia.com/models) un modelo que admita herramientas (*Tool Use*) y escribir su identificador en `MODEL`. |
+| No encuentra `peleadores.csv` | Subir el archivo a la sesión de Colab o ponerlo en la carpeta del notebook. |
+| Las respuestas varían entre ejecuciones | Es normal en un modelo de lenguaje. Los datos deben coincidir siempre con el CSV. Si el modelo cambió, la redacción también puede cambiar. |
 
 ### Fuentes y herramientas
 * Dataset: *UFC Fighters' Statistics Dataset* (Kaggle y Hugging Face), con datos de [ufcstats.com](http://ufcstats.com).
